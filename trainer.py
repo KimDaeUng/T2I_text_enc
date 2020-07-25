@@ -48,7 +48,9 @@ def train_epoch(model, criterion, train_iter, valid_iter, config):
             y = batch[0][:, 1:]
             # feed-forward
             hidden = model.init_hidden(config.batch_size)
-            print("batch[1]", batch[1])
+            # print("hidden : ", hidden[0].shape, hidden[1].shape)
+            # print("x : ", x.shape)
+            # print("batch[1]", batch[1])
             y_hat = model(x, batch[1], hidden)
 
             # calcuate loss and gradients with back-propagation
@@ -68,7 +70,7 @@ def train_epoch(model, criterion, train_iter, valid_iter, config):
 
                 print("epoch: %d batch: %d/%d\t|param|: %.2f\t|g_param|: %.2f\tloss: %.4f\tPPL: %.2f\t%5d words/s %3d secs" % (epoch, 
                                                                                                             batch_index + 1, 
-                                                                                                            int((len(train_iter.dataset.examples) // config.batch_size)  * config.iter_ratio_in_epoch), 
+                                                                                                            int((len(train_iter.dataset) // config.batch_size)), 
                                                                                                             avg_parameter_norm, 
                                                                                                             avg_grad_norm, 
                                                                                                             avg_loss,
@@ -88,8 +90,8 @@ def train_epoch(model, criterion, train_iter, valid_iter, config):
             # Take a step of gradient descent.
             optimizer.step()
 
-            sample_cnt += batch.text[0].size(0)
-            if sample_cnt >= len(train_iter.dataset.examples) * config.iter_ratio_in_epoch:
+            sample_cnt += batch[0].size(0)
+            if sample_cnt >= len(train_iter.dataset):
                 break
 
         sample_cnt = 0
@@ -111,7 +113,7 @@ def train_epoch(model, criterion, train_iter, valid_iter, config):
             total_word_count += int(current_batch_word_cnt)
 
             sample_cnt += batch[0].size(0)
-            if sample_cnt >= len(valid_iter.dataset.examples):
+            if sample_cnt >= len(valid_iter.dataset):
                 break
 
         avg_loss = total_loss / total_word_count
@@ -127,8 +129,9 @@ def train_epoch(model, criterion, train_iter, valid_iter, config):
 
         model.train()
 
-        model_fn = config.model.split(".")
-        model_fn = model_fn[:-1] + ["%02d" % epoch, "%.2f-%.2f" % (train_loss, np.exp(train_loss)), "%.2f-%.2f" % (avg_loss, np.exp(avg_loss))] + [model_fn[-1]]
+        # model_fn = config.model.split(".")
+        model_fn = config.model # model name
+        model_fn = [model_fn[:-1]] + ["%02d" % epoch, "%.2f-%.2f" % (train_loss, np.exp(train_loss)), "%.2f-%.2f" % (avg_loss, np.exp(avg_loss))] + [model_fn[-1]]
 
         # PyTorch provides efficient method for save and load model, which uses python pickle.
         torch.save({"model": model.state_dict(),

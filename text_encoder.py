@@ -64,7 +64,7 @@ class Text_Encoder(nn.Module):
 
     def init_hidden(self, batch_size):
         weight = next(self.parameters()).data
-        print(weight)
+        # print(weight)
         if self.rnn_type == 'LSTM':
             return (weight.new(self.num_layers * self.num_directions, batch_size, self.hidden_dim).zero_(),
                     weight.new(self.num_layers * self.num_directions, batch_size, self.hidden_dim).zero_())
@@ -73,26 +73,30 @@ class Text_Encoder(nn.Module):
 
     def forward(self, captions, cap_lens, hidden, mask=None):
         # input : [B, N_steps]
-        print(captions)
+        # print(captions)
         embed = self.embedding_layer(captions)
         embed = self.dropout(embed)
         # embed : [B, N_steps, Embeding_dim]
 
         cap_lens = cap_lens.data.tolist()
         embed = pack_padded_sequence(embed, cap_lens, batch_first=True)
+        # print("embed", embed)
         # embed : [B, N_steps, Embedding_dim] # Sorting & Removing the Paddings
 
         
         out, hidden = self.rnn(embed, hidden)
+        # print("out : ", out.data.shape)
+
         # out : [B, N_steps, N_directions * N_hidden]
         # hidden : [N_layers * N_directions, B, N_hidden]
 
         out = pad_packed_sequence(out, batch_first=True)[0]
+        
         # out : [B, N_steps, N_directions * N_hidden] # Unsorting? & Padding
         
         out = self.out(out)
 
-        y_hat = self.log_softmax(x)
+        y_hat = self.log_softmax(out)
                
         return y_hat
 

@@ -106,7 +106,7 @@ class Text_Dataset(data.Dataset):
         all_captions = []
         for i in range(len(filenames)):
             cap_path = '%s/text/%s.txt' % (data_dir, filenames[i])
-            print("cap_path", cap_path)
+            # print("cap_path", cap_path)
 
             with open(cap_path, "r", encoding='utf-8') as f:
                 captions = f.read().split('\n')
@@ -121,7 +121,7 @@ class Text_Dataset(data.Dataset):
                     tokens = tokenizer.tokenize(cap.lower())
                     # print('tokens', tokens)
                     if len(tokens) == 0:
-                        print('cap', cap)
+                        # print('cap', cap)
                         continue
 
                     tokens_new = []
@@ -131,7 +131,7 @@ class Text_Dataset(data.Dataset):
                             tokens_new.append(t)
                     all_captions.append(tokens_new)
                     cnt += 1
-            print('cap cnt', cnt)
+            # print('cap cnt', cnt)
 
         return all_captions
 
@@ -167,7 +167,7 @@ class Text_Dataset(data.Dataset):
             x[:] = sent_caption[:self.words_num]
             x_len = self.words_num
 
-        return x, x_len
+        return x, x_len -1
  
     def __len__(self):
         return len(self.captions)

@@ -15,7 +15,7 @@ import trainer
 def define_argparser():
     p = argparse.ArgumentParser()
 
-    # p.add_argument('-model', required = True)
+    p.add_argument('-model',  default="basic.")
     # p.add_argument('-train', required = True)
     # p.add_argument('-valid', required = True)
     # p.add_argument('-gpu_id', type = int, default = -1)
@@ -24,7 +24,7 @@ def define_argparser():
     p.add_argument('-n_epochs', type = int, default = 20)
     p.add_argument('-print_every', type = int, default = 50)
     p.add_argument('-early_stop', type = int, default = 3)
-    p.add_argument('-iter_ratio_in_epoch', type = float, default = 1.)
+    # p.add_argument('-iter_ratio_in_epoch', type = float, default = 1.)
 
     p.add_argument('-dropout', type = float, default = .5)
     p.add_argument('-embedding_dim', type = int, default = 1024)
@@ -92,7 +92,11 @@ if __name__ == '__main__':
             )
     
     # Let criterion cannot count EOS as right prediction, because EOS is easy to predict.
-    loss_weight = torch.ones(hr_dataset.n_word)
+    if torch.cuda.is_available():
+        loss_weight = torch.ones(hr_dataset.n_word).cuda()
+    else:
+        loss_weight = torch.ones(hr_dataset.n_word)
+
     loss_weight[0] = 0
     criterion = nn.NLLLoss(weight = loss_weight, size_average = False)
 
