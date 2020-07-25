@@ -17,15 +17,21 @@ noise = torch.randn(batch_size, z_dim).to(device) # generator input
 
 
 class Text_Encoder(nn.Module):
-    def __init__(self, vocab_size, rnn_type):
+    def __init__(self, vocab_size,
+                 embedding_dim,
+                 hidden_dim,
+                  n_layers,
+                   dropout_p,
+                    max_length,
+                     rnn_type):
         super(Text_Encoder, self).__init__()
 
         self.rnn_type = rnn_type
         self.vocap_size = vocab_size 
-        self.embedding_dim = 1024 #embedding size
+        self.embedding_dim = embedding_dim #embedding size
         self.drop_rate = 0.5 #dropout rate
-        self.hidden_dim = 1024 # word dim
-        self.num_layers = 1
+        self.hidden_dim = hidden_dim # word dim
+        self.num_layers = n_layers
         self.bidirectional = True # bidirectional option
 
         if self.bidirectional:
@@ -58,6 +64,7 @@ class Text_Encoder(nn.Module):
 
     def init_hidden(self, batch_size):
         weight = next(self.parameters()).data
+        print(weight)
         if self.rnn_type == 'LSTM':
             return (weight.new(self.num_layers * self.num_directions, batch_size, self.hidden_dim).zero_(),
                     weight.new(self.num_layers * self.num_directions, batch_size, self.hidden_dim).zero_())
@@ -66,6 +73,7 @@ class Text_Encoder(nn.Module):
 
     def forward(self, captions, cap_lens, hidden, mask=None):
         # input : [B, N_steps]
+        print(captions)
         embed = self.embedding_layer(captions)
         embed = self.dropout(embed)
         # embed : [B, N_steps, Embeding_dim]

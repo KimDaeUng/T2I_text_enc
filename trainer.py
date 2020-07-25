@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.utils as torch_utils
+from data_loader2 import prepare_data
 
 import utils
 
@@ -37,14 +38,18 @@ def train_epoch(model, criterion, train_iter, valid_iter, config):
         for batch_index, batch in enumerate(train_iter):
             optimizer.zero_grad()
 
-            current_batch_word_cnt = torch.sum(batch.text[1])
+            batch = prepare_data(batch)
+
+            current_batch_word_cnt = torch.sum(batch[1])
             # Most important lines in this method.
             # Since model takes BOS + sentence as an input and sentence + EOS as an output,
             # x(input) excludes last index, and y(index) excludes first index.
-            x = batch.text[0][:, :-1]
-            y = batch.text[0][:, 1:]
+            x = batch[0][:, :-1]
+            y = batch[0][:, 1:]
             # feed-forward
-            y_hat = model(x)
+            hidden = model.init_hidden(config.batch_size)
+            print("batch[1]", batch[1])
+            y_hat = model(x, batch[1], hidden)
 
             # calcuate loss and gradients with back-propagation
             loss = get_loss(y, y_hat, criterion)
@@ -92,17 +97,20 @@ def train_epoch(model, criterion, train_iter, valid_iter, config):
 
         model.eval()
         for batch_index, batch in enumerate(valid_iter):
-            current_batch_word_cnt = torch.sum(batch.text[1])
-            x = batch.text[0][:, :-1]
-            y = batch.text[0][:, 1:]
-            y_hat = model(x)
+            batch = prepare_data(batch)
+            current_batch_word_cnt = torch.sum(batch[1])
+            x = batch[0][:, :-1]
+            y = batch[0][:, 1:]
+            hidden = model.init_hidden(config.batch_size)
+            
+            y_hat = model(x, batch[1], hidden)
 
             loss = get_loss(y, y_hat, criterion, do_backward = False)
 
             total_loss += float(loss)
             total_word_count += int(current_batch_word_cnt)
 
-            sample_cnt += batch.text[0].size(0)
+            sample_cnt += batch[0].size(0)
             if sample_cnt >= len(valid_iter.dataset.examples):
                 break
 
