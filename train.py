@@ -3,11 +3,8 @@ import argparse
 import torch
 import torch.nn as nn
 
-from data_loader2 import Text_Dataset
-# from data_loader import DataLoader
-# import data_loader
+from data_loader import Text_Dataset
 from text_encoder import Text_Encoder as LM
-# from language_model import LanguageModel as LM
 import trainer
 
 

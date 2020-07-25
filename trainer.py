@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.utils as torch_utils
-from data_loader2 import prepare_data
+from data_loader import prepare_data
 
 import utils
 
